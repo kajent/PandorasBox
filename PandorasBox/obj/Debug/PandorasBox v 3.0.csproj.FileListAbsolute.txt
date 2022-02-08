@@ -1,0 +1,16 @@
+E:\PandorasBox\PandorasBox\PandorasBox v3.0\PandorasBox\obj\Debug\Interop.MLApp.dll
+E:\PandorasBox\PandorasBox\PandorasBox v3.0\PandorasBox\obj\Debug\PandorasBox v 3.0.csproj.ResolveComReference.cache
+E:\PandorasBox\PandorasBox\PandorasBox v3.0\PandorasBox\obj\Debug\PandorasBox.exe
+E:\PandorasBox\PandorasBox\PandorasBox v3.0\PandorasBox\obj\Debug\PandorasBox.pdb
+E:\PandorasBox\PandorasBox\PandorasBox v3.0\PandorasBox\bin\Debug\PandorasBox.exe
+E:\PandorasBox\PandorasBox\PandorasBox v3.0\PandorasBox\bin\Debug\PandorasBox.pdb
+E:\PandorasBox\PandorasBox\PandorasBox v3.0\PandorasBox\bin\Debug\Interop.MLApp.dll
+E:\PandorasBox\PandorasBox\PandorasBox v3.0\PandorasBox\obj\Debug\ResolveAssemblyReference.cache
+E:\PandorasBox\PandorasBox\PandorasBox v3.0\PandorasBox\obj\Debug\PandorasBox.DataImporter.resources
+E:\PandorasBox\PandorasBox\PandorasBox v3.0\PandorasBox\obj\Debug\PandorasBox.Properties.Resources.resources
+E:\PandorasBox\PandorasBox\PandorasBox v3.0\PandorasBox\obj\Debug\PandorasBox.SingleStockAnalyzer.resources
+E:\PandorasBox\PandorasBox\PandorasBox v3.0\PandorasBox\obj\Debug\PandorasBox v 3.0.csproj.GenerateResource.Cache
+E:\PandorasBox\PandorasBox\PandorasBox v3.1\PandorasBox\obj\Debug\Interop.MLApp.dll
+E:\PandorasBox\PandorasBox\PandorasBox v3.1\PandorasBox\obj\Debug\PandorasBox v 3.0.csproj.ResolveComReference.cache
+E:\PandorasBox\PandorasBox\PandorasBox v3.1\PandorasBox\obj\Debug\PandorasBox.exe
+E:\PandorasBox\PandorasBox\PandorasBox v3.1\PandorasBox\obj\Debug\PandorasBox.pdb

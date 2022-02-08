@@ -1,0 +1,333 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Data;
+using System.IO;
+using System.Windows.Forms;
+using MySql.Data.MySqlClient;
+
+namespace PandorasBox
+{
+    class DataBase
+    {
+        private static DataBase instance = null;
+        public MySqlConnection DBConnection = null;
+        static String connTargetDB;
+        static String targetDB;
+        static String connLocalServer;
+        static String connUserVariables;
+
+        static readonly object masterlock = new object();
+
+        //no instantiation allowed
+        private DataBase() 
+        {
+            //String RemoteServer = "Server=duffbeer.doesntexist.com;";
+            //String RemotePort = "PORT=3306;";
+            //exchange = "nasdaq";
+            connLocalServer = "Server=localhost;";
+            connUserVariables = "Allow User Variables=True;";
+            connTargetDB = "DATABASE=Pandora;";
+            targetDB = "Pandora";
+            String MyConnectString = connLocalServer + connUserVariables + connTargetDB +
+                "UID=root;" + "PASSWORD=abc123;";
+            DBConnection = new MySqlConnection(MyConnectString);
+            try
+            {
+                DBConnection.Open();
+            }
+            catch (MySqlException e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
+        public static DataBase getInstance()
+        {
+            lock (masterlock)
+            {
+                if (instance == null)
+                {
+                    instance = new DataBase();
+                    return instance;
+                }
+                else
+                {
+                    return instance;
+                }
+            }
+        }
+
+        public static DataSet crunchQuery(MySqlConnection Conn, String SQLQuery)
+        {
+            if (Conn.State.ToString() == "Open")
+            {
+                MySqlDataAdapter adapter = new MySqlDataAdapter(SQLQuery,Conn);
+                DataSet output = new DataSet();
+                adapter.Fill(output);
+                return output;
+            }
+            return null;
+        }
+
+        #region Importer
+
+        public static void importCSV(MySqlConnection Conn, String filePath/*, String exchange*/)
+        {
+            if (Conn.State.ToString() == "Open")
+            {
+                int lastSlash = filePath.LastIndexOf('\\');
+                int period = filePath.LastIndexOf('.');
+                String tableName = "stock_" + exchange + "_" + filePath.Substring(lastSlash + 1, period - lastSlash - 1);
+                String SQLQuery = "CREATE TABLE IF NOT EXISTS " + targetDB + "." + tableName + "(" +
+                    "symbol  varchar(10)," +
+                    "date    int unique," +
+                    "open    decimal(8,4)," +
+                    "high    decimal(8,4)," +
+                    "low     decimal(8,4)," +
+                    "close   decimal(8,4)," +
+                    "volume  bigint," +
+                    "index (date)"+
+                    ");";
+
+                MySqlCommand command = Conn.CreateCommand();
+                command.CommandText = SQLQuery;
+                MySqlDataReader reader = command.ExecuteReader();
+                reader.Close();
+
+                for (int i = 0; i < filePath.Length; i++)
+                {
+                    if (filePath[i] == '\\')
+                    {
+                        filePath = filePath.Substring(0, i) + "\\\\" + filePath.Substring(i + 1, filePath.Length - 1 -i);
+                        i++;
+                    }
+                }
+                SQLQuery = "LOAD DATA LOCAL INFILE '" + filePath + "' INTO TABLE " + targetDB + "." + tableName +
+                    " FIELDS TERMINATED BY ','" + "LINES TERMINATED BY '\n'" +
+                    " (symbol, date, open, high,low, close, volume); ";
+
+                command.CommandText = SQLQuery;
+                reader = command.ExecuteReader();
+                reader.Close();
+            }
+        }
+
+        public static void emptyAllTables(MySqlConnection Conn)
+        {
+            if (Conn.State.ToString() == "Open")
+            {
+                DataSet tableList = getAllStockTables(Conn);
+
+                Console.Write("Clearing all stock tables ...");
+                Console.Out.Flush();
+                
+                MySqlCommand command = Conn.CreateCommand();
+                for (int i = 0; i < tableList.Tables[0].Rows.Count; i++)
+                {
+                    String SQLQuery = "TRUNCATE " + targetDB + "." + tableList.Tables[0].Rows[i][0] + ";";
+                    command.CommandText = SQLQuery;
+                    MySqlDataReader reader = command.ExecuteReader();
+                    reader.Close();
+                }
+                Console.WriteLine("Done!");
+            }
+        }
+
+        public static void dropAllTables(MySqlConnection Conn)
+        {
+            if (Conn.State.ToString() == "Open")
+            {
+                DataSet tableList = getAllStockTables(Conn);
+
+                Console.Write("Deleting all stock tables ...");
+                Console.Out.Flush();
+
+                MySqlCommand command = Conn.CreateCommand();
+                for (int i = 0; i < tableList.Tables[0].Rows.Count; i++)
+                {
+                    String SQLQuery = "DROP TABLE IF EXISTS " + targetDB + "." + tableList.Tables[0].Rows[i][0] + " ;";
+                    command.CommandText = SQLQuery;
+                    MySqlDataReader reader = command.ExecuteReader();
+                    reader.Close();
+                }
+                Console.WriteLine("Done!");
+            }
+        }
+
+        public static void importSymbols(MySqlConnection Conn, String filePath)
+        {
+            if (Conn.State.ToString() == "Open")
+            {
+                Console.Write("Loading Symbols ...");
+                Console.Out.Flush();
+                int lastDash = filePath.LastIndexOf('_');
+                int lastSlash = filePath.LastIndexOf('\\');
+                String tableName = "symbols_" + filePath.Substring(lastSlash + 1, lastDash - lastSlash - 1);
+                String SQLQuery = "CREATE TABLE IF NOT EXISTS " + targetDB + "." + tableName + "(" +
+                    "description  varchar(100)," +
+                    "symbol    varchar(10)," +
+                    "date    int," +
+                    "open    decimal(8,4)," +
+                    "high    decimal(8,4)," +
+                    "low     decimal(8,4)," +
+                    "close   decimal(8,4)," +
+                    "volume  bigint," +
+                    "index  (symbol)," +
+                    "index (close),"+
+                    "index (volume)"+
+                    ");" +
+                    "TRUNCATE " + targetDB + "." + tableName + ";";
+
+                MySqlCommand command = Conn.CreateCommand();
+                command.CommandText = SQLQuery;
+                MySqlDataReader reader = command.ExecuteReader();
+                reader.Close();
+
+                for (int i = 0; i < filePath.Length; i++)
+                {
+                    if (filePath[i] == '\\')
+                    {
+                        filePath = filePath.Substring(0, i) + "\\\\" + filePath.Substring(i + 1, filePath.Length - 1 - i);
+                        i++;
+                    }
+                }
+                SQLQuery = "LOAD DATA LOCAL INFILE '" + filePath + "' INTO TABLE " + targetDB + "." + tableName +
+                    " FIELDS TERMINATED BY ','" + "LINES TERMINATED BY '\n'" +
+                    " (description, symbol, date, open, high,low, close, volume);";
+
+                command.CommandText = SQLQuery;
+                reader = command.ExecuteReader();
+                reader.Close();
+                Console.WriteLine("Done!");
+            }
+        }
+
+        public static void importSingleDaysData(MySqlConnection Conn, String symbol, String date,
+            String open, String high, String low, String close, String volume/*, String exchange*/)
+        {
+            if (Conn.State.ToString() == "Open")
+            {
+                try
+                {
+                    Console.Write("Updating " + symbol + "...");
+                    Console.Out.Flush();
+                    String tableName = "stock_" + /*exchange +*/ "_" + symbol;
+                                        
+                    String SQLQuery = "CREATE TABLE IF NOT EXISTS " + targetDB + "." + tableName + "(" +
+                        "symbol  varchar(10)," +
+                        "date    int unique," +
+                        "open    decimal(8,4)," +
+                        "high    decimal(8,4)," +
+                        "low     decimal(8,4)," +
+                        "close   decimal(8,4)," +
+                        "volume  bigint," +
+                        "index (date)" +
+                        ");";
+
+
+                    SQLQuery += "INSERT INTO " + targetDB + "." + tableName + " VALUES(" +
+                        "'" + symbol + "'," + date + "," + open + "," + high + "," + low + "," + close + "," + volume + ");";
+
+                    MySqlCommand command = Conn.CreateCommand();
+                    command.CommandText = SQLQuery;
+                    MySqlDataReader reader = command.ExecuteReader();
+                    reader.Close();
+
+                    Console.WriteLine("Updated " + symbol);
+                    Console.Out.Flush();
+                }
+                catch (MySqlException error)
+                {
+                    Console.WriteLine(error.Message);
+                }
+            }
+        }
+
+        #endregion
+
+        #region Analyzer
+        public static DataSet getAllStockTables(MySqlConnection Conn)
+        {
+            if (Conn.State.ToString() == "Open")
+            {
+                String SQLQuery = "SELECT table_name FROM INFORMATION_SCHEMA.TABLES " +
+                    "WHERE table_schema = '"+ targetDB +"' AND table_name LIKE 'stock%'";
+                MySqlDataAdapter adapter = new MySqlDataAdapter(SQLQuery, Conn);
+                DataSet output = new DataSet();
+                adapter.Fill(output);
+                return output;
+            }
+            return null;
+        }
+
+        public static DataSet getExchangeData(MySqlConnection Conn, String exchange, List<String> filters)
+        {
+            if (Conn.State.ToString() == "Open")
+            {
+                String SQLQuery = "SELECT symbol, close, volume, description from " + targetDB + "." 
+                    + "symbols_" + exchange;
+                if (filters.Count > 0)
+                {
+                    String refinedSearch = " WHERE ";
+                    foreach (String clause in filters)
+                    {
+                        refinedSearch = refinedSearch + clause + " AND ";
+                    }
+                    refinedSearch = refinedSearch.Remove(refinedSearch.Length - 4);
+                    SQLQuery += refinedSearch;
+                }
+                SQLQuery += ";";
+
+                MySqlDataAdapter adapter = new MySqlDataAdapter(SQLQuery, Conn);
+                DataSet output = new DataSet();
+                adapter.Fill(output);
+                return output;
+            }
+            return null;
+        }
+
+        public static DataSet getSingleStockData(MySqlConnection Conn, String symbol, String dateLimit/*, String exchange*/)
+        {
+            if (Conn.State.ToString() == "Open")
+            {
+                Console.Write("Extracting " + symbol + "...");
+                String SQLQuery = "(SELECT symbol, date, open, high, low, close, volume FROM " +
+                    targetDB + "." + "stock_" /*+ exchange + "_"*/ + symbol + " ORDER BY date DESC LIMIT " + dateLimit +
+                    ") ORDER BY date;";
+                MySqlDataAdapter adapter = new MySqlDataAdapter(SQLQuery, Conn);
+                DataSet output = new DataSet();
+                adapter.Fill(output);
+                Console.WriteLine("Done!");
+                return output;
+            }
+            return null;
+        }
+
+        public static DataSet getStockSymbolsByName(MySqlConnection Conn, String exchange, List<String> symbols)
+        {
+            if (Conn.State.ToString() == "Open")
+            {
+                String SQLQuery = "SELECT symbol, close, volume, description from " + targetDB + "." 
+                    + "symbols_" + exchange + " WHERE symbol IN (";
+                for (int i = 0; i < symbols.Count -1; i++)
+                {
+                    SQLQuery += "'" + symbols[i] + "',";
+                }
+                
+            
+                SQLQuery += "'"+symbols[symbols.Count -1]+"');";
+
+                MySqlDataAdapter adapter = new MySqlDataAdapter(SQLQuery, Conn);
+                DataSet output = new DataSet();
+                adapter.Fill(output);
+                return output;
+            }
+            return null;
+        }
+
+
+        #endregion
+    }
+}

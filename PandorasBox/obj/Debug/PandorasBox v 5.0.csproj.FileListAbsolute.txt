@@ -1,0 +1,13 @@
+G:\PandorasBox\PandorasBox\PandorasBox v5.0\PandorasBox\bin\Debug\PandorasBox.exe
+G:\PandorasBox\PandorasBox\PandorasBox v5.0\PandorasBox\bin\Debug\PandorasBox.pdb
+G:\PandorasBox\PandorasBox\PandorasBox v5.0\PandorasBox\obj\Debug\ResolveAssemblyReference.cache
+G:\PandorasBox\PandorasBox\PandorasBox v5.0\PandorasBox\obj\Debug\PandorasBox.DataImporter.resources
+G:\PandorasBox\PandorasBox\PandorasBox v5.0\PandorasBox\obj\Debug\PandorasBox.Favorites.resources
+G:\PandorasBox\PandorasBox\PandorasBox v5.0\PandorasBox\obj\Debug\PandorasBox.Graph.resources
+G:\PandorasBox\PandorasBox\PandorasBox v5.0\PandorasBox\obj\Debug\PandorasBox.Properties.Resources.resources
+G:\PandorasBox\PandorasBox\PandorasBox v5.0\PandorasBox\obj\Debug\PandorasBox.SingleStockAnalyzer.resources
+G:\PandorasBox\PandorasBox\PandorasBox v5.0\PandorasBox\obj\Debug\PandorasBox v 5.0.csproj.GenerateResource.Cache
+G:\PandorasBox\PandorasBox\PandorasBox v5.0\PandorasBox\obj\Debug\PandorasBox.exe
+G:\PandorasBox\PandorasBox\PandorasBox v5.0\PandorasBox\obj\Debug\PandorasBox.pdb
+G:\PandorasBox\PandorasBox\PandorasBox v6.0\PandorasBox\obj\Debug\PandorasBox.exe
+G:\PandorasBox\PandorasBox\PandorasBox v6.0\PandorasBox\obj\Debug\PandorasBox.pdb
